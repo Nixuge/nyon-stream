@@ -14,6 +14,7 @@ python3 nyaascraperpy \<search for nyaa\>
 ### For now the script only works on Linux with dmenu and webtorrent (webtorrent-cli) installed.
 It's really not hard to make it compatible with windows but i'll just let someone do it for me.
 
+
 # dependencies
 ### python dependencies
 BeautifulSoup     
@@ -23,3 +24,7 @@ dmenu
 ### external dependencies
 dmenu (https://archlinux.org/packages/community/x86_64/dmenu/)    
 webtorrent (https://aur.archlinux.org/packages/webtorrent-cli)
+
+
+# config
+You can edit the 16th line of the script to have it scrap default/danger (white/red) entries on nyaa
