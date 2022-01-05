@@ -7,13 +7,24 @@ from urllib.parse import unquote
 import sys
 import os
 import requests
+import logging
 import dmenu #linux only
 
 
-#success = green (always true)
-#default = white
-#danger = red
-def getRows(soup : BeautifulSoup, getDefault = False, getDanger = False) -> ResultSet:
+getDefaultRows: bool = False #get default (white) rows on nyaa
+getDangerRows: bool = False #get danger (red) rows on nyaa
+TUImode: bool = False #use a tui instead of dmenu
+loggingLevel: int = logging.INFO #print debug
+baseUrl: str = 'https://nyaa.si/?s=seeders&o=desc' #base url (by default searches by most seeders)
+webtorrentArgs: str = "--mpv" #args (by default starts mpv)
+maxPageNum: int = 5 #max page to get on nyaa (by default 5), if your number is too big you may encounter some delay
+dmenuArgs = {"font": "Ubuntu-15"} #additional args for dmenu
+
+
+logging.basicConfig()
+logging.getLogger().setLevel(loggingLevel)
+
+def getRows(soup : BeautifulSoup, getDefault = getDefaultRows, getDanger = getDangerRows) -> ResultSet:
     rows = soup.find_all('tr', class_='success')
     if getDefault:
         rows += soup.find_all('tr', class_='default')
@@ -24,12 +35,15 @@ def getRows(soup : BeautifulSoup, getDefault = False, getDanger = False) -> Resu
 
 def getTorrents(url: str) -> dict:
     torrents = []
-    for page_number in range(1, 100): 
-        page_url = f"{url}&p={str(page_number)}"
-        page_html = requests.get(page_url)
-        soup = BeautifulSoup(page_html.text, 'html.parser')
+    for pageNum in range(1, maxPageNum): 
+        pageUrl = f"{url}&p={str(pageNum)}"
+        logging.info(f"Getting page {str(pageNum)} with url {pageUrl}")
+        pageHtml = requests.get(pageUrl)
+        soup = BeautifulSoup(pageHtml.text, 'html.parser')
+        logging.info(f"Got page {str(pageNum)} !")
 
         rows = getRows(soup)
+        logging.info(f"Got {str(len(rows))} rows from page {str(pageNum)}")
 
         for row in rows:
             td = row.find_all('td', class_='text-center')
@@ -51,17 +65,27 @@ def getTorrents(url: str) -> dict:
     return torrents
 
 #linux only
-def choice(dict: dict) -> str:
-    choice = dmenu.show((x["name"] for x in dict), lines=25)
-    return next((x for x in dict if x["name"] == choice), None)["magnet"]
-
+def choiceD(dict: dict, getSubElem = False, subElem = "") -> str: #lazy
+    if getSubElem:
+        choice = dmenu.show((x.get(subElem) for x in dict), lines=25, **dmenuArgs)
+        return next((x for x in dict if x.get(subElem) == choice), None)
+    choice = dmenu.show((x for x in dict), lines=25, **dmenuArgs)
+    return next((x for x in dict if x == choice), None)
+#linux only
+def askD(prompt: str) -> str:
+    return dmenu.show([], prompt=prompt, **dmenuArgs)
 
 if __name__ == '__main__':
     query = " ".join(sys.argv[1:]).replace(" ", "+")
-    base_url = 'https://nyaa.si/?s=seeders&o=desc'
+    if len(query) == 0:
+        query = askD("Search tags")
 
-    torrents = getTorrents(f"{base_url}&q={query}")
-    magnet = choice(torrents)
+    torrents = getTorrents(f"{baseUrl}&q={query}")
+    logging.info(f"Got {str(len(torrents))} total entries")
+    if len(torrents) == 0:
+        sys.exit(1)
+    magnet = choiceD(torrents, getSubElem=True, subElem="name")["magnet"]
 
     #linux only
-    os.system(f"webtorrent \"{magnet}\" --mpv")
+    logging.info("Loading webtorrent")
+    os.system(f"webtorrent \"{magnet}\" {webtorrentArgs}")
