@@ -39,29 +39,32 @@ def getTorrents(url: str) -> dict:
     for pageNum in range(1, maxPageNum): 
         pageUrl = f"{url}&p={str(pageNum)}"
         logging.info(f"Getting page {str(pageNum)} with url {pageUrl}")
-        pageHtml = requests.get(pageUrl)
-        soup = BeautifulSoup(pageHtml.text, 'html.parser')
-        logging.info(f"Got page {str(pageNum)} !")
+        try:
+            pageHtml = requests.get(pageUrl)
+            soup = BeautifulSoup(pageHtml.text, 'html.parser')
+            logging.info(f"Got page {str(pageNum)} !")
 
-        rows = getRows(soup)
-        logging.info(f"Got {str(len(rows))} rows from page {str(pageNum)}")
+            rows = getRows(soup)
+            logging.info(f"Got {str(len(rows))} rows from page {str(pageNum)}")
 
-        for row in rows:
-            td = row.find_all('td', class_='text-center')
-            links = td[0].find_all('a')
+            for row in rows:
+                td = row.find_all('td', class_='text-center')
+                links = td[0].find_all('a')
 
-            size = next((x for x in td if "GiB" in x.text or "$MiB" in x.text), None)
-            try:
-                size = "[" + size.get_text() + "] "
-            except:
-                size = ""
+                size = next((x for x in td if "GiB" in x.text or "$MiB" in x.text), None)
+                try:
+                    size = "[" + size.get_text() + "] "
+                except:
+                    size = ""
 
-            magnet = unquote(links[1]['href'])
-            name = row.find_all('a',text=True)[0].get_text()
-            torrents.append({"name": size + name, "magnet": magnet})
+                magnet = unquote(links[1]['href'])
+                name = row.find_all('a',text=True)[0].get_text()
+                torrents.append({"name": size + name, "magnet": magnet})
 
-        if len(rows) == 0:
-            break
+            if len(rows) == 0:
+                break
+        except:
+            pass
         
     return torrents
 
