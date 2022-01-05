@@ -38,7 +38,10 @@ def getTorrents(url: str) -> dict:
     for pageNum in range(1, maxPageNum): 
         pageUrl = f"{url}&p={str(pageNum)}"
         logging.info(f"Getting page {str(pageNum)} with url {pageUrl}")
-        pageHtml = requests.get(pageUrl, proxies=proxies)
+        try: #from TheRealTechWiz, but in a slightly less dirty way
+            pageHtml = requests.get(pageUrl, proxies=proxies)
+        except: 
+            continue
         soup = BeautifulSoup(pageHtml.text, 'html.parser')
         logging.info(f"Got page {str(pageNum)} !")
 
