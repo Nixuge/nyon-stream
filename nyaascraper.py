@@ -8,17 +8,19 @@ import sys
 import os
 import requests
 import logging
-import dmenu #linux only
 
 
 getDefaultRows: bool = False #get default (white) rows on nyaa
 getDangerRows: bool = False #get danger (red) rows on nyaa
-TUImode: bool = False #use a tui instead of dmenu
+TUImode: bool = True #use a tui instead of dmenu
 loggingLevel: int = logging.INFO #print debug
 baseUrl: str = 'https://nyaa.si/?s=seeders&o=desc' #base url (by default searches by most seeders)
 webtorrentArgs: str = "--mpv" #args (by default starts mpv)
 maxPageNum: int = 5 #max page to get on nyaa (by default 5), if your number is too big you may encounter some delay
 dmenuArgs = {"font": "Ubuntu-15"} #additional args for dmenu
+
+if not TUImode:
+    import dmenu
 
 
 logging.basicConfig()
@@ -30,7 +32,6 @@ def getRows(soup : BeautifulSoup, getDefault = getDefaultRows, getDanger = getDa
         rows += soup.find_all('tr', class_='default')
     if getDanger:
         rows += soup.find_all('tr', class_='danger')
-
     return rows
 
 def getTorrents(url: str) -> dict:
@@ -64,28 +65,47 @@ def getTorrents(url: str) -> dict:
         
     return torrents
 
-#linux only
-def choiceD(dict: dict, getSubElem = False, subElem = "") -> str: #lazy
-    if getSubElem:
-        choice = dmenu.show((x.get(subElem) for x in dict), lines=25, **dmenuArgs)
-        return next((x for x in dict if x.get(subElem) == choice), None)
-    choice = dmenu.show((x for x in dict), lines=25, **dmenuArgs)
-    return next((x for x in dict if x == choice), None)
-#linux only
-def askD(prompt: str) -> str:
+def _choiceD(dict: dict, subElem = "") -> str:
+    choice = dmenu.show((x.get(subElem) for x in dict), lines=25, **dmenuArgs)
+    return next((x for x in dict if x.get(subElem) == choice), None)
+
+def _choiceT(dict: dict, subElem = "") -> str:
+    elems = list((x.get(subElem) for x in dict))
+    elemsReverse = list(elems)
+    elemsReverse.reverse()
+    for i, elem in enumerate(elemsReverse):
+        print(f"{str(len(elems) - i)}: {elem}")
+    #seems to be working
+    index = int(input("Enter your choice: ")) -1
+    
+    return dict[index]
+
+def choice(dict: dict, subElem = "") -> str: #lazy
+    if TUImode:
+        return _choiceT(dict, subElem)
+    return _choiceD(dict, subElem)
+
+def ask(prompt: str) -> str:
+    if TUImode:
+        return input(prompt)
     return dmenu.show([], prompt=prompt, **dmenuArgs)
+    
 
 if __name__ == '__main__':
     query = " ".join(sys.argv[1:]).replace(" ", "+")
     if len(query) == 0:
-        query = askD("Search tags")
+        query = ask("Search tags: ").replace(" ", "+")
 
     torrents = getTorrents(f"{baseUrl}&q={query}")
     logging.info(f"Got {str(len(torrents))} total entries")
     if len(torrents) == 0:
         sys.exit(1)
-    magnet = choiceD(torrents, getSubElem=True, subElem="name")["magnet"]
-
-    #linux only
+    magnet = choice(torrents, subElem="name").get("magnet")
+    logging.info(f"Got magnet link: {magnet}")
+    
     logging.info("Loading webtorrent")
-    os.system(f"webtorrent \"{magnet}\" {webtorrentArgs}")
+    if os.name == "posix":
+        os.system(f"webtorrent \"{magnet}\" {webtorrentArgs}")
+    else:
+        print("TODO: find how to run webtorrent-cli on windows. don't make an issue for this except if it's been 2 months since the last commit")
+        #os.system(f"./webtorrent \"{magnet}\" {webtorrentArgs}")
