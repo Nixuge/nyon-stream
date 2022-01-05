@@ -8,20 +8,19 @@ import sys
 import os
 import requests
 import logging
-
-
-getDefaultRows: bool = False #get default (white) rows on nyaa
-getDangerRows: bool = False #get danger (red) rows on nyaa
-TUImode: bool = True #use a tui instead of dmenu
-loggingLevel: int = logging.INFO #print debug
-baseUrl: str = 'https://nyaa.si/?s=seeders&o=desc' #base url (by default searches by most seeders)
-webtorrentArgs: str = "--mpv" #args (by default starts mpv)
-maxPageNum: int = 5 #max page to get on nyaa (by default 5), if your number is too big you may encounter some delay
-dmenuArgs = {"font": "Ubuntu-15"} #additional args for dmenu
+#if you need additional info for the settings, look at the readme
+getDefaultRows: bool = False
+getDangerRows: bool = False
+TUImode: bool = True
+loggingLevel: int = logging.INFO
+baseUrl: str = 'https://nyaa.si/?s=seeders&o=desc'
+webtorrentArgs: str = "--keep-seeding --mpv"
+maxPageNum: int = 5
+dmenuArgs = {"font": "Ubuntu-15"}
+proxies = None
 
 if not TUImode:
     import dmenu
-
 
 logging.basicConfig()
 logging.getLogger().setLevel(loggingLevel)
@@ -39,7 +38,7 @@ def getTorrents(url: str) -> dict:
     for pageNum in range(1, maxPageNum): 
         pageUrl = f"{url}&p={str(pageNum)}"
         logging.info(f"Getting page {str(pageNum)} with url {pageUrl}")
-        pageHtml = requests.get(pageUrl)
+        pageHtml = requests.get(pageUrl, proxies=proxies)
         soup = BeautifulSoup(pageHtml.text, 'html.parser')
         logging.info(f"Got page {str(pageNum)} !")
 
