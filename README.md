@@ -7,7 +7,7 @@ https://user-images.githubusercontent.com/33488576/148145434-03d97e83-1ff2-4370-
 
 
 # usage
-python3 nyaascraperpy \<search for nyaa\>
+python3 nyaascraper.py \<search for nyaa\>
     
     
 # info
