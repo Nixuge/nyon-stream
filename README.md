@@ -97,7 +97,6 @@ For Windows :<br/>
     mpv player (executable only)<br/>
     node (executable only)<br/>
     
-    I have created a portable install for this...Wlines can be buggy but the rest works fine.
 </b>
 
 
