@@ -96,6 +96,9 @@ For Windows :<br/>
     wlines (https://github.com/JerwuQu/wlines)<br/>
     mpv player (executable only)<br/>
     node (executable only)<br/>
+    webtorrents-cli <br/>
+
+    
     
 </b>
 
