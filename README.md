@@ -91,6 +91,13 @@ dmenu </b><i>only if TUImode disabled</i><b>
 ### external dependencies <b>
 dmenu ([arch](https://archlinux.org/packages/community/x86_64/dmenu/)) </b><i>only if TUImode disabled</i><b><br/>
 webtorrent ([arch aur](https://aur.archlinux.org/packages/webtorrent-cli))<br/>
+
+For Windows :<br/>
+    wlines (https://github.com/JerwuQu/wlines)<br/>
+    mpv player (executable only)<br/>
+    node (executable only)<br/>
+    
+    I have created a portable install for this...Wlines can be buggy but the rest works fine.
 </b>
 
 
