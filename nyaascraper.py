@@ -100,7 +100,7 @@ def _choiceT2(dict: dict,subElem) -> str:
     
 def choice(dict: dict, subElem = "") -> str: #lazy
     if TUImode:
-        return _choiceT2(dict, subElem)
+        return _choiceT(dict, subElem)
     return _choiceD(dict, subElem)
 
 def ask(prompt: str) -> str:
@@ -125,7 +125,10 @@ if __name__ == '__main__':
     logging.info("Loading webtorrent")
     if os.name == "posix":
         os.system(f"webtorrent \"{magnet}\" {webtorrentArgs}")
+        
     else:
         #print("TODO: find how to run webtorrent-cli on windows. don't make an issue for this except if it's been 2 months since the last commit")
         
         os.system(f"node.exe {webtorrent_path} \"{magnet}\" {webtorrentArgs}")
+
+        
