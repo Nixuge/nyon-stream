@@ -14,7 +14,7 @@ getDangerRows: bool = False
 TUImode: bool = True
 loggingLevel: int = logging.INFO
 baseUrl: str = 'https://nyaa.si/?s=seeders&o=desc'
-webtorrentArgs: str = "--keep-seeding --mpv"
+webtorrentArgs: str = "--keep-seeding --mpv --playlist"
 maxPageNum: int = 5
 dmenuArgs = {"font": "Ubuntu-15"}
 proxies = None
