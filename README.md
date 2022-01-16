@@ -7,7 +7,7 @@
 # important info
 This script was made to be a [notflix](https://github.com/Bugswriter/notflix), nyaa edition. It was also designed to be linux-only at first.<br/>
 You can however run it on other OSes by setting the "TUImode" value to True in [the config](#config), at the cost of the fancy menu shown in the demo (you'll have to use your terminal instead)
-<br><br><b>Temporary dirty warning: for now the script doesn't work on windows since grub decided to yoink out the windows boot option <i>(tbh it got its revenge)</i>, so I can't test it. Will add support as soon as I got my windows boot entry back</b>
+<br><br><b>A Working windows build is in the latest release with the required external dependencies</b>
 
 
 # config
