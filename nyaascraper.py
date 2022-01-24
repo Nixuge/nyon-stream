@@ -3,7 +3,6 @@ from bs4.element import ResultSet
 from bs4 import BeautifulSoup
 from urllib.parse import unquote
 
-import subprocess
 import sys
 import os
 import requests
@@ -14,11 +13,17 @@ getDangerRows: bool = False
 TUImode: bool = True
 loggingLevel: int = logging.INFO
 baseUrl: str = 'https://nyaa.si/?s=seeders&o=desc'
-webtorrentArgs: str = "--keep-seeding --mpv"
+webtorrentArgs: str = "--keep-seeding --mpv --playlist"
 maxPageNum: int = 5
 dmenuArgs = {"font": "Ubuntu-15"}
 proxies = None
-webtorrent_path = os.path.join("webtorrent-cli","bin","cmd.js")
+
+#Path To Dependencies
+#FOR WINDOWS ONLY
+webtorrent_path = os.path.join(r"dependencies","webtorrent-cli","bin","cmd.js") #Webtorrent node module
+node_path = os.path.join(r"dependencies","node.exe") #Node Executable
+mpv_path = os.path.join(r"dependencies") #Folder containing mpv
+
 if not TUImode:
     import dmenu
 
@@ -79,25 +84,9 @@ def _choiceT(dict: dict, subElem = "") -> str:
         print(f"{str(len(elems) - i)}: {elem}")
     #seems to be working
     index = int(input("Enter your choice: ")) -1
-    print(dict[index])
+    
     return dict[index]
 
-def _choiceT2(dict: dict,subElem) -> str:
-    nl = "◙"
-    text = str()
-    count = 50
-    counter=0
-    for i in  dict:             #cannot echo alot of stuff 
-        if counter != count:
-            text+= i["name"]+nl
-            counter += 1
-        else:
-            break         
-    choice = int(subprocess.check_output(f'echo "{text}" | .\wlines.exe -id  -l 25', shell=True,encoding="UTF-8").strip())
-    if choice != -1:
-        return dict[choice]
-
-    
 def choice(dict: dict, subElem = "") -> str: #lazy
     if TUImode:
         return _choiceT(dict, subElem)
@@ -119,16 +108,12 @@ if __name__ == '__main__':
     if len(torrents) == 0:
         sys.exit(1)
     magnet = choice(torrents, subElem="name").get("magnet")
-    print(magnet)
     logging.info(f"Got magnet link: {magnet}")
     
     logging.info("Loading webtorrent")
     if os.name == "posix":
         os.system(f"webtorrent \"{magnet}\" {webtorrentArgs}")
-        
     else:
         #print("TODO: find how to run webtorrent-cli on windows. don't make an issue for this except if it's been 2 months since the last commit")
-        
-        os.system(f"node.exe {webtorrent_path} \"{magnet}\" {webtorrentArgs}")
+        os.system(f'SET PATH={mpv_path};%PATH% && {node_path} {webtorrent_path} \"{magnet}\" {webtorrentArgs}') #First the path to mpv is added to path 
 
-        
